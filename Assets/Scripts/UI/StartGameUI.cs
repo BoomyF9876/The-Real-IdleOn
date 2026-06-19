@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class StartGame : MonoBehaviour
+public class StartGameUI : MonoBehaviour
 {
     [SerializeField] Button startBtn;
     [SerializeField] Button quitBtn;
