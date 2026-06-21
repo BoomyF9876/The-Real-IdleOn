@@ -5855,7 +5855,7 @@ MonoBehaviour:
   retargetInterval: 1
   nextWaypointDistance: 0.7
   jumpNodeHeightRequirement: 0.9
-  jumpModifier: 8
+  jumpModifier: 10
   jumpCheckOffset: 2
   pathUpdateSeconds: 0.5
   restrictedArea:

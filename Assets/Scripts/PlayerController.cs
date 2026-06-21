@@ -68,8 +68,9 @@ public class PlayerController : MonoBehaviour
     {
         if (currentTarget == null) return;
 
+        CheckFacing();
+
         float distance = Vector2.Distance(transform.position, currentTarget.transform.position);
-        //Debug.Log("Distance: " + distance);
         if (distance > attackRange)
         {
             animator.SetBool("isInCombat", false);
@@ -120,6 +121,21 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void CheckFacing()
+    {
+        int direction = 1;
+        if (rb.linearVelocityX != 0)
+        {
+            direction = rb.linearVelocityX < -0.05f ? -1 : 1;
+        }
+        else
+        {
+            direction = transform.position.x > currentTarget.transform.position.x ? -1 : 1;
+        }
+
+        transform.localScale = new Vector3(direction * Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+    }
+
     private void MoveTowardTarget()
     {
         if (path == null) return;
@@ -145,15 +161,6 @@ public class PlayerController : MonoBehaviour
         if (distance < nextWaypointDistance)
         {
             currentWaypoint++;
-        }
-
-        if (rb.linearVelocityX > 0.05f)
-        {
-            transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
-        }
-        else if (rb.linearVelocityX < -0.05f)
-        {
-            transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
         }
 
         enemyAttackTimer = 0f;

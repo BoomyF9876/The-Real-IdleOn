@@ -271,3 +271,4 @@ MonoBehaviour:
   attackDamage: 5
   attacksPerSecond: 1
   hitPushBack: 200
+  coinPrefab: {fileID: 7295870446054068007, guid: b7acc0a5d2894604c92ae3c3eb9c1a90, type: 3}

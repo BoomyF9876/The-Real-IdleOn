@@ -16,6 +16,9 @@ public class Enemy : MonoBehaviour, IDamageable
     [SerializeField] private float attacksPerSecond = 1f;
     [SerializeField] private float hitPushBack = 5f;
 
+    [Header("Coin")]
+    [SerializeField] GameObject coinPrefab;
+
     Animator animator;
     Rigidbody2D rb;
     float currentHealth;
@@ -74,6 +77,7 @@ public class Enemy : MonoBehaviour, IDamageable
     private void Die()
     {
         OnDied?.Invoke(this, baseCoinDrop);
+        Instantiate(coinPrefab, transform.position, Quaternion.identity);
         Destroy(gameObject);
     }
 }
