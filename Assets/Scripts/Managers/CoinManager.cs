@@ -21,6 +21,7 @@ public class CoinManager : MonoBehaviour
             return;
         }
         Instance = this;
+        CurrentCoins = 0;
     }
 
     public void AddCoins(int amount)

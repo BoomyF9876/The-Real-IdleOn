@@ -13,20 +13,13 @@ public enum GameState
     Quit
 }
 
-public enum PlayerState
-{
-    Normal
-}
 
 public class GameManager : MonoBehaviour
 {
     private GameState currentState = GameState.MainMenu;
-    private PlayerState playerState = PlayerState.Normal;
     public static GameManager Instance;
     public event Action<GameState> OnGameStateChanged;
-    public event Action<PlayerState> OnPlayerStateChanged;
     public GameState GameState { get { return currentState; } }
-    public PlayerState PlayerState { get { return playerState; } }
 
     private void Awake()
     {
@@ -57,13 +50,6 @@ public class GameManager : MonoBehaviour
         HandleGameStateChange();
     }
 
-    public void ChangeState(PlayerState newState)
-    {
-        playerState = newState;
-        OnPlayerStateChanged?.Invoke(newState);
-        HandlePlayerStateChange();
-    }
-
     private void HandleGameStateChange()
     {
         switch (currentState)
@@ -89,15 +75,6 @@ public class GameManager : MonoBehaviour
                 break;
             case GameState.Quit:
                 Quit();
-                break;
-        }
-    }
-
-    private void HandlePlayerStateChange()
-    {
-        switch (playerState)
-        {
-            default:
                 break;
         }
     }

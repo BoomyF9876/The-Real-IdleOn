@@ -10,6 +10,7 @@ using UnityEngine;
 public class PlayerStats : MonoBehaviour
 {
     [Header("Base Stats (Inspector defaults / starting values)")]
+    [SerializeField] private float baseAttackRange = 1f;
     [SerializeField] private float baseMaxHealth = 50f;
     [SerializeField] private float baseMoveSpeed = 2.5f;
     [SerializeField] private float baseAttackDamage = 5f;
@@ -21,6 +22,7 @@ public class PlayerStats : MonoBehaviour
     public float CurrentHealth { get; private set; }
     public float MoveSpeed { get; private set; }
     public float AttackDamage { get; private set; }
+    public float AttackRange { get; private set; }
     public float AttacksPerSecond { get; private set; }
     public float CoinMultiplier { get; private set; }
 
@@ -33,8 +35,8 @@ public class PlayerStats : MonoBehaviour
 
     private void Awake()
     {
-        RecalculateStats();
         CurrentHealth = MaxHealth;
+        RecalculateStats();
     }
 
     /// <summary>
@@ -49,6 +51,7 @@ public class PlayerStats : MonoBehaviour
         MaxHealth = baseMaxHealth;
         MoveSpeed = baseMoveSpeed;
         AttackDamage = baseAttackDamage;
+        AttackRange = baseAttackRange;
         AttacksPerSecond = baseAttacksPerSecond;
         CoinMultiplier = baseCoinMultiplier;
 

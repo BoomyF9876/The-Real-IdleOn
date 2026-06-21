@@ -14,7 +14,6 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerStats))]
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private float attackRange = 0.75f;
     [SerializeField] private float retargetInterval = 0.5f;
     [SerializeField] private float nextWaypointDistance = 3f;
     [SerializeField] private float jumpNodeHeightRequirement = 0.8f;
@@ -41,6 +40,11 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
         Instance = this;
         Stats = GetComponent<PlayerStats>();
     }
@@ -71,7 +75,7 @@ public class PlayerController : MonoBehaviour
         CheckFacing();
 
         float distance = Vector2.Distance(transform.position, currentTarget.transform.position);
-        if (distance > attackRange)
+        if (distance > Stats.AttackRange)
         {
             animator.SetBool("isInCombat", false);
             animator.SetBool("isRunning", true);
@@ -212,8 +216,8 @@ public class PlayerController : MonoBehaviour
         if (currentTarget != null && enemyAttackTimer >= currentTarget.AttackInterval)
         {
             enemyAttackTimer = 0f;
-            //currentTarget.PushBack(-direction);
             Stats.TakeDamage(currentTarget.AttackDamage);
+            animator.SetTrigger("hit");
         }
     }
 
@@ -229,7 +233,7 @@ public class PlayerController : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, attackRange);
+        Gizmos.DrawWireSphere(transform.position, Stats.AttackRange);
     }
 
     private void OnPathComplete(Path p)

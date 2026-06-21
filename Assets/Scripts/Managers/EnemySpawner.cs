@@ -52,6 +52,11 @@ public class EnemySpawner : MonoBehaviour
 
     void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
         Instance = this;
     }
 
@@ -159,17 +164,8 @@ public class EnemySpawner : MonoBehaviour
         enemy.OnDied -= HandleEnemyDied;
         aliveEnemies.Remove(enemy);
 
-        if (CoinManager.Instance != null)
-        {
-            // Apply player's coin multiplier upgrade here at the point of awarding.
-            float multiplier = 1f;
-            if (PlayerController.Instance != null && PlayerController.Instance.Stats != null)
-            {
-                multiplier = PlayerController.Instance.Stats.CoinMultiplier;
-            }
-            int awarded = Mathf.Max(1, Mathf.RoundToInt(coinDrop * multiplier));
-            CoinManager.Instance.AddCoins(awarded);
-        }
+        int awarded = Mathf.Max(1, Mathf.RoundToInt(coinDrop * PlayerController.Instance.Stats.CoinMultiplier));
+        CoinManager.Instance.AddCoins(awarded);
     }
 
     /// <summary>

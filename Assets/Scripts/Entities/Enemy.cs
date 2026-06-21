@@ -1,5 +1,7 @@
 using System;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// A single enemy instance. Health and damage are set by the spawner at spawn time
@@ -19,6 +21,9 @@ public class Enemy : MonoBehaviour, IDamageable
     [Header("Coin")]
     [SerializeField] GameObject coinPrefab;
 
+    [Header("Health Bar")]
+    [SerializeField] HealthBarUI healthBar;
+
     Animator animator;
     Rigidbody2D rb;
     float currentHealth;
@@ -27,8 +32,6 @@ public class Enemy : MonoBehaviour, IDamageable
     public float AttackDamage => attackDamage;
     public float AttackInterval => attacksPerSecond > 0f ? 1f / attacksPerSecond : float.MaxValue;
 
-    // Fired when this enemy dies, carrying how many coins it should award.
-    // EnemySpawner (or a dedicated EnemyDeathHandler) subscribes per-instance to clean up + award coins.
     public event Action<Enemy, int> OnDied;
 
     /// <summary>
@@ -44,6 +47,8 @@ public class Enemy : MonoBehaviour, IDamageable
         currentHealth = maxHealth;
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
+
+        healthBar.gameObject.SetActive(false);
     }
 
     public void TakeDamage(float amount)
@@ -52,6 +57,8 @@ public class Enemy : MonoBehaviour, IDamageable
 
         currentHealth = Mathf.Max(0f, currentHealth - amount);
         animator.SetTrigger("hit");
+        healthBar.gameObject.SetActive(true);
+        healthBar.RefreshHealthBar(currentHealth, maxHealth);
 
         if (currentHealth <= 0f)
         {
