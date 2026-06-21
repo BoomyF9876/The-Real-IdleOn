@@ -65,7 +65,7 @@ public class PausePanelUI : MonoBehaviour
     {
         if (isQuitting)
         {
-            GameManager.Instance.Quit();
+            GameManager.Instance.ChangeState(GameState.Quit);
         }
         else
         {

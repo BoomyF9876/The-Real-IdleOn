@@ -25,6 +25,7 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private float baseEnemyHealth = 10f;
     [SerializeField] private float baseEnemyDamage = 2f;
     [SerializeField] private float baseEnemyAttacksPerSecond = 1f;
+    [SerializeField] private float baseExp = 1f;
     [SerializeField] private int baseCoinDrop = 1;
 
     [Header("Difficulty Scaling Over Time")]
@@ -34,8 +35,6 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private float healthGrowthPerTick = 1.10f;
     [Tooltip("Damage multiplier applied per scaling tick.")]
     [SerializeField] private float damageGrowthPerTick = 1.08f;
-    [Tooltip("Coin drop multiplier applied per scaling tick - lets coin income scale with difficulty.")]
-    [SerializeField] private float coinGrowthPerTick = 1.05f;
 
     [Header("Duplicate Position Avoidance")]
     [Tooltip("Safety cap on retries before giving up and using the last position generated.")]
@@ -147,13 +146,13 @@ public class EnemySpawner : MonoBehaviour
 
         float healthMult = Mathf.Pow(healthGrowthPerTick, difficultyTier);
         float damageMult = Mathf.Pow(damageGrowthPerTick, difficultyTier);
-        float coinMult = Mathf.Pow(coinGrowthPerTick, difficultyTier);
 
         float health = baseEnemyHealth * healthMult;
         float damage = baseEnemyDamage * damageMult;
-        int coins = Mathf.Max(1, Mathf.RoundToInt(baseCoinDrop * coinMult));
+        int coins = baseCoinDrop;
+        float exp = baseExp;
 
-        enemy.Initialize(health, damage, baseEnemyAttacksPerSecond, coins);
+        enemy.Initialize(health, damage, baseEnemyAttacksPerSecond, coins, exp);
         enemy.OnDied += HandleEnemyDied;
 
         aliveEnemies.Add(enemy);
@@ -164,7 +163,7 @@ public class EnemySpawner : MonoBehaviour
         enemy.OnDied -= HandleEnemyDied;
         aliveEnemies.Remove(enemy);
 
-        int awarded = Mathf.Max(1, Mathf.RoundToInt(coinDrop * PlayerController.Instance.Stats.CoinMultiplier));
+        int awarded = Mathf.Max(1, Mathf.RoundToInt(coinDrop + PlayerController.Instance.Stats.CoinMultiplier));
         CoinManager.Instance.AddCoins(awarded);
     }
 

@@ -205,6 +205,7 @@ public class PlayerController : MonoBehaviour
 
             if (currentTarget.IsDead)
             {
+                Stats.GainExperience(currentTarget.Exp);
                 currentTarget = null;
                 animator.SetBool("isInCombat", false);
                 return;
@@ -223,11 +224,10 @@ public class PlayerController : MonoBehaviour
 
     private void HandlePlayerDied()
     {
-        // Hook point for game-over / respawn logic.
-        // For the core-loop milestone, just stop acting.
         animator.SetBool("isInCombat", false);
         currentTarget = null;
         enabled = false;
+        GameManager.Instance.ChangeState(GameState.GameOver);
     }
 
     private void OnDrawGizmosSelected()

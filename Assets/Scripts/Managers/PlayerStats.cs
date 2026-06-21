@@ -10,32 +10,42 @@ using UnityEngine;
 public class PlayerStats : MonoBehaviour
 {
     [Header("Base Stats (Inspector defaults / starting values)")]
+    [SerializeField] private float baseMaxExp = 2f;
     [SerializeField] private float baseAttackRange = 1f;
     [SerializeField] private float baseMaxHealth = 50f;
     [SerializeField] private float baseMoveSpeed = 2.5f;
     [SerializeField] private float baseAttackDamage = 5f;
     [SerializeField] private float baseAttacksPerSecond = 1f;
-    [SerializeField] private float baseCoinMultiplier = 1f; // 1 = 100% of dropped coins
 
     // Current values, separate from base so upgrades can add/multiply onto base later.
+    public int Level { get; private set; }
+    public float MaxExp { get; private set; }
     public float MaxHealth { get; private set; }
+    public float CurrentExp { get; private set; }
     public float CurrentHealth { get; private set; }
     public float MoveSpeed { get; private set; }
     public float AttackDamage { get; private set; }
     public float AttackRange { get; private set; }
     public float AttacksPerSecond { get; private set; }
     public float CoinMultiplier { get; private set; }
+    public float ExpGain { get; private set; }
 
     public bool IsDead => CurrentHealth <= 0f;
 
     // UI / other systems subscribe to these instead of polling every frame.
+    public event Action<int> OnLevelChanged; // current, max
     public event Action<float, float> OnHealthChanged; // current, max
+    public event Action<float, float> OnExpChanged; // current, max
     public event Action OnPlayerDied;
     public event Action OnStatsRecalculated;
 
     private void Awake()
     {
         CurrentHealth = MaxHealth;
+        CoinMultiplier = 0;
+        CurrentExp = 0;
+        ExpGain = 0;
+        Level = 1;
         RecalculateStats();
     }
 
@@ -47,13 +57,12 @@ public class PlayerStats : MonoBehaviour
     public void RecalculateStats()
     {
         float oldMaxHealth = MaxHealth;
-
         MaxHealth = baseMaxHealth;
+        MaxExp = baseMaxExp;
         MoveSpeed = baseMoveSpeed;
         AttackDamage = baseAttackDamage;
         AttackRange = baseAttackRange;
         AttacksPerSecond = baseAttacksPerSecond;
-        CoinMultiplier = baseCoinMultiplier;
 
         // If max health increased (e.g. from an upgrade), grant the difference to current health
         // rather than fully healing, so upgrading isn't also a free full heal mid-fight.
@@ -78,6 +87,22 @@ public class PlayerStats : MonoBehaviour
         {
             OnPlayerDied?.Invoke();
         }
+    }
+
+    public void GainExperience(float amount)
+    {
+        CurrentExp += amount;
+        int oldLvl = Level;
+
+        while (CurrentExp > MaxExp)
+        {
+            CurrentExp -= MaxExp;
+            MaxExp += Level;
+            Level++;
+        }
+
+        OnExpChanged?.Invoke(CurrentExp, MaxExp);
+        if (Level > oldLvl) OnLevelChanged?.Invoke(Level);
     }
 
     public void Heal(float amount)

@@ -9,20 +9,15 @@ using UnityEngine.UI;
 /// </summary>
 public class Enemy : MonoBehaviour, IDamageable
 {
-    [Header("Drop Settings")]
-    [SerializeField] private int baseCoinDrop = 1;
-
-    [Header("Runtime (set by spawner, visible for debugging)")]
-    [SerializeField] private float maxHealth = 10f;
-    [SerializeField] private float attackDamage = 2f;
-    [SerializeField] private float attacksPerSecond = 1f;
     [SerializeField] private float hitPushBack = 5f;
-
-    [Header("Coin")]
     [SerializeField] GameObject coinPrefab;
-
-    [Header("Health Bar")]
     [SerializeField] HealthBarUI healthBar;
+
+    int baseCoinDrop = 1;
+    float baseExp = 1;
+    float maxHealth = 10f;
+    float attackDamage = 2f;
+    float attacksPerSecond = 1f;
 
     Animator animator;
     Rigidbody2D rb;
@@ -30,6 +25,7 @@ public class Enemy : MonoBehaviour, IDamageable
 
     public bool IsDead => currentHealth <= 0f;
     public float AttackDamage => attackDamage;
+    public float Exp => baseExp;
     public float AttackInterval => attacksPerSecond > 0f ? 1f / attacksPerSecond : float.MaxValue;
 
     public event Action<Enemy, int> OnDied;
@@ -37,12 +33,13 @@ public class Enemy : MonoBehaviour, IDamageable
     /// <summary>
     /// Called by EnemySpawner right after Instantiate to set this enemy's power level.
     /// </summary>
-    public void Initialize(float health, float damage, float atkPerSecond, int coinDrop)
+    public void Initialize(float health, float damage, float atkPerSecond, int coinDrop, float exp)
     {
         maxHealth = health;
         attackDamage = damage;
         attacksPerSecond = atkPerSecond;
         baseCoinDrop = coinDrop;
+        baseExp = exp;
 
         currentHealth = maxHealth;
         animator = GetComponent<Animator>();
