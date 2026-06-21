@@ -15,9 +15,7 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private Enemy enemyPrefab;
 
     [Header("Spawn Area")]
-    [Tooltip("Spawning uses a box centered on this transform's position. Defaults to this object if left empty.")]
-    [SerializeField] private Transform spawnAreaCenter;
-    [SerializeField] private Vector2 spawnAreaSize = new Vector2(16f, 8f);
+    [SerializeField] GameObject enemySpawnZones;
 
     [Header("Spawn Timing")]
     [SerializeField] private float spawnInterval = 2f;
@@ -39,27 +37,37 @@ public class EnemySpawner : MonoBehaviour
     [Tooltip("Coin drop multiplier applied per scaling tick - lets coin income scale with difficulty.")]
     [SerializeField] private float coinGrowthPerTick = 1.05f;
 
-    private float spawnTimer;
-    private float scalingTimer;
-    private int difficultyTier; // how many scaling ticks have elapsed
+    [Header("Duplicate Position Avoidance")]
+    [Tooltip("Safety cap on retries before giving up and using the last position generated.")]
+    [SerializeField] private int maxSpawnPositionAttempts = 30;
 
-    private readonly List<Enemy> aliveEnemies = new List<Enemy>();
+    float spawnTimer;
+    float scalingTimer;
+    float minDistanceFromOtherEnemies;
+    int difficultyTier; // how many scaling ticks have elapsed
+    int numSpawnZone;
+    readonly List<Enemy> aliveEnemies = new List<Enemy>();
 
     public static EnemySpawner Instance { get; private set; }
 
-    private void Awake()
+    void Awake()
     {
         Instance = this;
-        if (spawnAreaCenter == null) spawnAreaCenter = transform;
     }
 
-    private void Update()
+    void Start()
+    {
+        numSpawnZone = enemySpawnZones.transform.childCount;
+        minDistanceFromOtherEnemies = enemyPrefab.GetSize();
+    }
+
+    void Update()
     {
         UpdateScalingTimer();
         UpdateSpawnTimer();
     }
 
-    private void UpdateScalingTimer()
+    void UpdateScalingTimer()
     {
         scalingTimer += Time.deltaTime;
         if (scalingTimer >= scalingInterval)
@@ -84,16 +92,53 @@ public class EnemySpawner : MonoBehaviour
         SpawnEnemy();
     }
 
-    private void SpawnEnemy()
+    private Vector2 GenerateRandomPos()
     {
-        Vector2 center = spawnAreaCenter.position;
-        Vector2 halfSize = spawnAreaSize * 0.5f;
-        Vector2 spawnPos = new Vector2(
+        int randZone = Random.Range(0, numSpawnZone);
+        Transform selectedArea = enemySpawnZones.transform.GetChild(randZone);
+
+        Vector2 center = selectedArea.position;
+        Vector2 halfSize = selectedArea.gameObject.GetComponent<SpriteRenderer>().bounds.size * 0.5f;
+        return new Vector2(
             Random.Range(center.x - halfSize.x, center.x + halfSize.x),
             Random.Range(center.y - halfSize.y, center.y + halfSize.y)
         );
+    }
 
-        Enemy enemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
+    private Vector2 GenerateNonOverlappingSpawnPos()
+    {
+        Vector2 spawnPos = GenerateRandomPos();
+
+        int attempts = 0;
+        while (IsPositionTooCloseToAliveEnemy(spawnPos) && attempts < maxSpawnPositionAttempts)
+        {
+            spawnPos = GenerateRandomPos();
+            attempts++;
+        }
+
+        return spawnPos;
+    }
+
+    private bool IsPositionTooCloseToAliveEnemy(Vector2 position)
+    {
+        foreach (Enemy enemy in aliveEnemies)
+        {
+            if (enemy == null) continue;
+
+            float sqrDist = ((Vector2)enemy.transform.position - position).magnitude;
+            if (sqrDist < minDistanceFromOtherEnemies)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void SpawnEnemy()
+    {
+        Vector2 spawnPos = GenerateNonOverlappingSpawnPos();
+        Enemy enemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity, transform);
 
         float healthMult = Mathf.Pow(healthGrowthPerTick, difficultyTier);
         float damageMult = Mathf.Pow(damageGrowthPerTick, difficultyTier);
@@ -149,12 +194,5 @@ public class EnemySpawner : MonoBehaviour
         }
 
         return nearest;
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        Transform center = spawnAreaCenter != null ? spawnAreaCenter : transform;
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireCube(center.position, spawnAreaSize);
     }
 }

@@ -12,9 +12,13 @@ public class Enemy : MonoBehaviour, IDamageable
 
     [Header("Runtime (set by spawner, visible for debugging)")]
     [SerializeField] private float maxHealth = 10f;
-    [SerializeField] private float currentHealth = 10f;
     [SerializeField] private float attackDamage = 2f;
     [SerializeField] private float attacksPerSecond = 1f;
+    [SerializeField] private float hitPushBack = 5f;
+
+    Animator animator;
+    Rigidbody2D rb;
+    float currentHealth;
 
     public bool IsDead => currentHealth <= 0f;
     public float AttackDamage => attackDamage;
@@ -30,10 +34,13 @@ public class Enemy : MonoBehaviour, IDamageable
     public void Initialize(float health, float damage, float atkPerSecond, int coinDrop)
     {
         maxHealth = health;
-        currentHealth = health;
         attackDamage = damage;
         attacksPerSecond = atkPerSecond;
         baseCoinDrop = coinDrop;
+
+        currentHealth = maxHealth;
+        animator = GetComponent<Animator>();
+        rb = GetComponent<Rigidbody2D>();
     }
 
     public void TakeDamage(float amount)
@@ -41,11 +48,27 @@ public class Enemy : MonoBehaviour, IDamageable
         if (IsDead) return;
 
         currentHealth = Mathf.Max(0f, currentHealth - amount);
+        animator.SetTrigger("hit");
 
         if (currentHealth <= 0f)
         {
             Die();
         }
+    }
+
+    public void PushBack(float direction)
+    {
+        float mag = direction > 0 ? hitPushBack : -hitPushBack;
+        rb.linearVelocity = Vector3.zero;
+        rb.AddForce(new Vector2(mag, Mathf.Abs(mag)));
+    }
+
+    public float GetSize()
+    {
+        Collider2D collider = GetComponent<Collider2D>();
+        if (collider == null) return 0f;
+
+        return collider.bounds.size.magnitude;
     }
 
     private void Die()

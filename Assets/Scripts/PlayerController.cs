@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using Pathfinding;
 using UnityEngine;
 
 /// <summary>
@@ -12,24 +14,44 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerStats))]
 public class PlayerController : MonoBehaviour
 {
-    public static PlayerController Instance { get; private set; }
-
-    [Header("Combat")]
     [SerializeField] private float attackRange = 0.75f;
-    [Tooltip("How often (seconds) we re-check for a nearer enemy while already in combat.")]
     [SerializeField] private float retargetInterval = 0.5f;
+    [SerializeField] private float nextWaypointDistance = 3f;
+    [SerializeField] private float jumpNodeHeightRequirement = 0.8f;
+    [SerializeField] private float jumpModifier = 0.3f;
+    [SerializeField] private float jumpCheckOffset = 0.1f;
+    [SerializeField] private float pathUpdateSeconds = 0.5f;
+
+    [SerializeField] List<SpriteRenderer> restrictedArea;
+
+    int currentWaypoint = 0;
+    bool isGrounded = false;
+    float attackTimer;
+    float retargetTimer;
+    float enemyAttackTimer;
+
+    Path path;
+    Enemy currentTarget;
+    Seeker seeker;
+    Rigidbody2D rb;
+    Animator animator;
 
     public PlayerStats Stats { get; private set; }
-
-    private Enemy currentTarget;
-    private float attackTimer;
-    private float retargetTimer;
-    private float enemyAttackTimer;
+    public static PlayerController Instance { get; private set; }
 
     private void Awake()
     {
         Instance = this;
         Stats = GetComponent<PlayerStats>();
+    }
+
+    private void Start()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        seeker = GetComponent<Seeker>();
+        animator = GetComponent<Animator>();
+
+        InvokeRepeating("UpdateTargeting", 0f, pathUpdateSeconds);
     }
 
     private void OnEnable()
@@ -44,41 +66,36 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        if (Stats.IsDead) return;
-
-        UpdateTargeting();
-
-        if (currentTarget == null)
-        {
-            return; // nothing to fight, idle
-        }
+        if (currentTarget == null) return;
 
         float distance = Vector2.Distance(transform.position, currentTarget.transform.position);
-
+        //Debug.Log("Distance: " + distance);
         if (distance > attackRange)
         {
+            animator.SetBool("isInCombat", false);
+            animator.SetBool("isRunning", true);
             MoveTowardTarget();
         }
         else
         {
+            animator.SetBool("isInCombat", true);
+            animator.SetBool("isRunning", false);
             AttackTarget();
         }
+
+        if (retargetTimer < retargetInterval) retargetTimer += Time.deltaTime;
     }
 
     private void UpdateTargeting()
     {
+        if (Stats.IsDead || animator.GetBool("isInCombat")) return;
         // If current target died or was cleared, find a new one immediately.
         if (currentTarget == null)
         {
-            currentTarget = EnemySpawner.Instance != null
-                ? EnemySpawner.Instance.GetNearestEnemy(transform.position)
-                : null;
+            currentTarget = EnemySpawner.Instance.GetNearestEnemy(transform.position);
             return;
         }
 
-        // Periodically check if a closer enemy has spawned, so the player doesn't
-        // beeline across the map past enemies that just appeared nearby.
-        retargetTimer += Time.deltaTime;
         if (retargetTimer >= retargetInterval)
         {
             retargetTimer = 0f;
@@ -96,33 +113,89 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
+
+        if (seeker.IsDone())
+        {
+            seeker.StartPath(rb.position, currentTarget.transform.position, OnPathComplete);
+        }
     }
 
     private void MoveTowardTarget()
     {
-        Vector3 targetPos = currentTarget.transform.position;
-        transform.position = Vector3.MoveTowards(
-            transform.position,
-            targetPos,
-            Stats.MoveSpeed * Time.deltaTime
-        );
+        if (path == null) return;
+        if (currentWaypoint >= path.vectorPath.Count) return;
 
-        // Reset enemy attack timer while out of its range so it doesn't "bank" a free hit.
+        isGrounded = Physics2D.Raycast(transform.position, Vector3.down, GetComponent<Collider2D>().bounds.extents.y + jumpCheckOffset);
+        Vector2 direction = ((Vector2)path.vectorPath[currentWaypoint] - rb.position).normalized;
+        direction = FixDirection(direction);
+
+        if (isGrounded)
+        {
+            if (direction.y > jumpNodeHeightRequirement)
+            {
+                rb.AddForce(Vector2.up * Stats.MoveSpeed * jumpModifier * Time.deltaTime);
+            }
+        }
+
+        direction.y = 0f;
+        direction.Normalize();
+        rb.AddForce(direction * Stats.MoveSpeed * Time.deltaTime);
+
+        float distance = Vector2.Distance(rb.position, path.vectorPath[currentWaypoint]);
+        if (distance < nextWaypointDistance)
+        {
+            currentWaypoint++;
+        }
+
+        if (rb.linearVelocityX > 0.05f)
+        {
+            transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+        }
+        else if (rb.linearVelocityX < -0.05f)
+        {
+            transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+        }
+
         enemyAttackTimer = 0f;
+    }
+
+    private Vector2 FixDirection(Vector2 direction)
+    {
+        if (direction.y < 0)
+        {
+            direction.y = 0;
+        }
+
+        foreach (SpriteRenderer t in restrictedArea)
+        {
+            if (t == null) continue;
+            if (t.bounds.Contains(transform.position))
+            {
+                direction.y = 0;
+                break;
+            }
+        }
+
+        return direction.normalized;
     }
 
     private void AttackTarget()
     {
         // Player attacks on their own cooldown.
         attackTimer += Time.deltaTime;
+        float direction = currentTarget.transform.position.x - transform.position.x;
+
         if (attackTimer >= Stats.AttackInterval)
         {
             attackTimer = 0f;
             currentTarget.TakeDamage(Stats.AttackDamage);
+            currentTarget.PushBack(direction);
+            animator.SetTrigger("attack");
 
             if (currentTarget.IsDead)
             {
                 currentTarget = null;
+                animator.SetBool("isInCombat", false);
                 return;
             }
         }
@@ -132,6 +205,7 @@ public class PlayerController : MonoBehaviour
         if (currentTarget != null && enemyAttackTimer >= currentTarget.AttackInterval)
         {
             enemyAttackTimer = 0f;
+            //currentTarget.PushBack(-direction);
             Stats.TakeDamage(currentTarget.AttackDamage);
         }
     }
@@ -140,14 +214,23 @@ public class PlayerController : MonoBehaviour
     {
         // Hook point for game-over / respawn logic.
         // For the core-loop milestone, just stop acting.
+        animator.SetBool("isInCombat", false);
         currentTarget = null;
         enabled = false;
-        Debug.Log("Player died.");
     }
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, attackRange);
+    }
+
+    private void OnPathComplete(Path p)
+    {
+        if (!p.error)
+        {
+            path = p;
+            currentWaypoint = 0;
+        }
     }
 }
