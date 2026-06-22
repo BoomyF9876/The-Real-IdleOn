@@ -369,13 +369,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f973bbef6295404489e0e7115fc3534, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
-  baseCoinDrop: 1
-  maxHealth: 2
-  attackDamage: 1
-  attacksPerSecond: 1
   hitPushBack: 200
   coinPrefab: {fileID: 7295870446054068007, guid: b7acc0a5d2894604c92ae3c3eb9c1a90, type: 3}
   healthBar: {fileID: 1318474554654158029}
+  enemySprite: {fileID: 9044734027548954021}
 --- !u!1001 &2304702920805711988
 PrefabInstance:
   m_ObjectHideFlags: 0

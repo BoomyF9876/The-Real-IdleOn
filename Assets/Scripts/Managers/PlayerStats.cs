@@ -222,7 +222,7 @@ public class PlayerStats : MonoBehaviour
     public void ApplyHealOnKill()
     {
         if (IsDead) return;
-        Heal(MaxHealth * healOnKillPercent);
+        //Heal(MaxHealth * healOnKillPercent);
     }
 
     public void GainExperience(float amount)

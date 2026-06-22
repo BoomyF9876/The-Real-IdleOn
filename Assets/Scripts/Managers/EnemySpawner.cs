@@ -2,17 +2,20 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Spawns enemies at random points within a defined area, on a timer.
-/// Difficulty scales with elapsed game time: every `scalingInterval` seconds,
-/// enemy health/damage/coin drop all increase by their respective growth rates.
-/// 
-/// This is the main "knob" for game balance later - tune scalingInterval and the
-/// growth multipliers to control how fast the game ramps up.
+/// Spawns enemies at random points within the spawn zones, on a timer.
+///
+/// Two difficulty axes:
+///  1. TIME-TIER SCALING: every scalingInterval seconds, whatever enemy spawns gets its
+///     HP/damage/coin/exp multiplied by the per-tick growth rates (gradual ramp).
+///  2. ENEMY TYPES: each spawn picks a type (EnemyData) by weighted random among types whose
+///     unlock time has passed. Stronger types unlock later and their spawn weight ramps up over
+///     time, so the mix shifts from weak to strong as the run goes on (sharper ramp).
 /// </summary>
 public class EnemySpawner : MonoBehaviour
 {
-    [Header("Prefab")]
-    [SerializeField] private Enemy enemyPrefab;
+    [Header("Enemy Types (assign your EnemyData assets; starter first)")]
+    [SerializeField] private List<EnemyData> enemyTypes = new List<EnemyData>();
+    [SerializeField] Enemy enemyPrefab;
 
     [Header("Spawn Area")]
     [SerializeField] GameObject enemySpawnZones;
@@ -21,33 +24,29 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private float spawnInterval = 2f;
     [SerializeField] private int maxAliveEnemies = 10;
 
-    [Header("Enemy Base Stats (at game start)")]
-    [SerializeField] private float baseEnemyHealth = 10f;
-    [SerializeField] private float baseEnemyDamage = 2f;
-    [SerializeField] private float baseEnemyAttacksPerSecond = 1f;
-    [SerializeField] private float baseExp = 1f;
-    [SerializeField] private int baseCoinDrop = 1;
-
-    [Header("Difficulty Scaling Over Time")]
+    [Header("Time-Tier Scaling (applies to every type)")]
     [Tooltip("How often (seconds) difficulty ramps up a notch.")]
     [SerializeField] private float scalingInterval = 30f;
-    [Tooltip("Health multiplier applied per scaling tick (e.g. 1.1 = +10% per tick).")]
+    [Tooltip("Health multiplier applied per scaling tick.")]
     [SerializeField] private float healthGrowthPerTick = 1.10f;
     [Tooltip("Damage multiplier applied per scaling tick.")]
     [SerializeField] private float damageGrowthPerTick = 1.08f;
-    [Tooltip("Coin-drop multiplier per tick. MUST scale (>1) or the economy can't fund exponential upgrade costs. 1.10 tracks enemy HP growth.")]
+    [Tooltip("Coin-drop multiplier per tick. Keep >1 so income funds exponential upgrade costs.")]
     [SerializeField] private float coinGrowthPerTick = 1.10f;
-    [Tooltip("Exp-drop multiplier per tick. Keeps leveling progressing as enemies scale. 1.10 tracks enemy HP growth.")]
+    [Tooltip("Exp-drop multiplier per tick.")]
     [SerializeField] private float expGrowthPerTick = 1.10f;
 
     [Header("Duplicate Position Avoidance")]
+    [Tooltip("Used when an enemy prefab's size can't be measured. Spacing falls back to this.")]
+    [SerializeField] private float fallbackSpacing = 0.5f;
     [Tooltip("Safety cap on retries before giving up and using the last position generated.")]
     [SerializeField] private int maxSpawnPositionAttempts = 30;
 
     float spawnTimer;
     float scalingTimer;
-    float minDistanceFromOtherEnemies;
-    int difficultyTier; // how many scaling ticks have elapsed
+    float elapsedTime;                  // total seconds since the run started (drives unlocks/weights)
+    float minDistanceFromOtherEnemies;  // set per-spawn from the chosen prefab's size
+    int difficultyTier;                 // how many scaling ticks have elapsed
     int numSpawnZone;
     readonly List<Enemy> aliveEnemies = new List<Enemy>();
 
@@ -66,11 +65,11 @@ public class EnemySpawner : MonoBehaviour
     void Start()
     {
         numSpawnZone = enemySpawnZones.transform.childCount;
-        minDistanceFromOtherEnemies = enemyPrefab.GetSize();
     }
 
     void Update()
     {
+        elapsedTime += Time.deltaTime;
         UpdateScalingTimer();
         UpdateSpawnTimer();
     }
@@ -92,12 +91,42 @@ public class EnemySpawner : MonoBehaviour
 
         spawnTimer = 0f;
 
-        // Clean up null entries (enemies destroyed without going through OnEnemyDied, just in case)
         aliveEnemies.RemoveAll(e => e == null);
 
         if (aliveEnemies.Count >= maxAliveEnemies) return;
 
         SpawnEnemy();
+    }
+
+    /// <summary>
+    /// Picks an enemy type by weighted random among types whose unlock time has passed.
+    /// Weights ramp over time (see EnemyData.GetCurrentWeight), so stronger types
+    /// become more likely the longer the run goes.
+    /// </summary>
+    private EnemyData PickEnemyType()
+    {
+        float total = 0f;
+        foreach (EnemyData d in enemyTypes)
+        {
+            if (d == null) continue;
+            total += d.GetCurrentWeight(elapsedTime);
+        }
+
+        if (total <= 0f)
+        {
+            return enemyTypes.Count > 0 ? enemyTypes[0] : null; // fallback: starter
+        }
+
+        float r = Random.value * total;
+        foreach (EnemyData d in enemyTypes)
+        {
+            if (d == null) continue;
+            float w = d.GetCurrentWeight(elapsedTime);
+            if (r < w) return d;
+            r -= w;
+        }
+
+        return enemyTypes[enemyTypes.Count - 1];
     }
 
     private Vector2 GenerateRandomPos()
@@ -133,8 +162,8 @@ public class EnemySpawner : MonoBehaviour
         {
             if (enemy == null) continue;
 
-            float sqrDist = ((Vector2)enemy.transform.position - position).magnitude;
-            if (sqrDist < minDistanceFromOtherEnemies)
+            float dist = ((Vector2)enemy.transform.position - position).magnitude;
+            if (dist < minDistanceFromOtherEnemies)
             {
                 return true;
             }
@@ -145,20 +174,28 @@ public class EnemySpawner : MonoBehaviour
 
     private void SpawnEnemy()
     {
+        EnemyData data = PickEnemyType();
+        if (data == null || enemyPrefab == null) return;
+
+        // Spacing is based on the chosen type's prefab size (falls back if unmeasurable).
+        float size = enemyPrefab.GetSize();
+        minDistanceFromOtherEnemies = size > 0f ? size : fallbackSpacing;
+
         Vector2 spawnPos = GenerateNonOverlappingSpawnPos();
         Enemy enemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity, transform);
 
+        // Apply time-tier scaling on top of this type's base stats.
         float healthMult = Mathf.Pow(healthGrowthPerTick, difficultyTier);
         float damageMult = Mathf.Pow(damageGrowthPerTick, difficultyTier);
+        float coinMult   = Mathf.Pow(coinGrowthPerTick, difficultyTier);
+        float expMult    = Mathf.Pow(expGrowthPerTick, difficultyTier);
 
-        float health = baseEnemyHealth * healthMult;
-        float damage = baseEnemyDamage * damageMult;
-        // Coins and exp scale with tier too, so income/leveling keep pace with rising
-        // enemy power and exponential upgrade costs.
-        int coins = Mathf.Max(1, Mathf.RoundToInt(baseCoinDrop * Mathf.Pow(coinGrowthPerTick, difficultyTier)));
-        float exp = baseExp * Mathf.Pow(expGrowthPerTick, difficultyTier);
+        float health = data.baseHealth * healthMult;
+        float damage = data.baseDamage * damageMult;
+        int coins    = Mathf.Max(1, Mathf.RoundToInt(data.baseCoinDrop * coinMult));
+        float exp    = data.baseExp * expMult;
 
-        enemy.Initialize(health, damage, baseEnemyAttacksPerSecond, coins, exp);
+        enemy.Initialize(health, damage, data.baseAttacksPerSecond, coins, exp, data.enemySprite);
         enemy.OnDied += HandleEnemyDied;
 
         aliveEnemies.Add(enemy);
