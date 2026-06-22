@@ -1,6 +1,10 @@
 using TMPro;
 using UnityEngine;
 
+/// <summary>
+/// Live readout of player stats. Subscribes to PlayerStats events so every value
+/// updates the moment a talent/shop purchase or level-up changes it.
+/// </summary>
 public class StatPanelUI : MonoBehaviour
 {
     [Header("Health Bar")]
@@ -22,18 +26,16 @@ public class StatPanelUI : MonoBehaviour
     void Start()
     {
         playerStats = PlayerController.Instance.Stats;
+
         healthBar.RefreshHealthBar(playerStats.CurrentHealth, playerStats.MaxHealth);
         expBar.RefreshHealthBar(playerStats.CurrentExp, playerStats.MaxExp);
         UpdateLevel(playerStats.Level);
-        UpdateAtkDmg(playerStats.AttackDamage);
-        UpdateAtkSpeed(playerStats.AttacksPerSecond);
-        UpdateMoveSpeed(playerStats.MoveSpeed);
-        UpdateCoinDrop(playerStats.CoinMultiplier);
-        UpdateExp(playerStats.ExpGain);
+        RefreshDetailStats();
 
         playerStats.OnHealthChanged += healthBar.RefreshHealthBar;
         playerStats.OnExpChanged += expBar.RefreshHealthBar;
         playerStats.OnLevelChanged += UpdateLevel;
+        playerStats.OnStatsRecalculated += RefreshDetailStats; // <-- updates dmg/atk/move/coin/exp on every purchase
     }
 
     void OnDisable()
@@ -41,35 +43,20 @@ public class StatPanelUI : MonoBehaviour
         playerStats.OnHealthChanged -= healthBar.RefreshHealthBar;
         playerStats.OnExpChanged -= expBar.RefreshHealthBar;
         playerStats.OnLevelChanged -= UpdateLevel;
+        playerStats.OnStatsRecalculated -= RefreshDetailStats;
+    }
+
+    private void RefreshDetailStats()
+    {
+        attackDmg.text = playerStats.AttackDamage.ToString("0.#");
+        attackSpeed.text = playerStats.AttacksPerSecond.ToString("0.##");
+        moveSpeed.text = playerStats.MoveSpeed.ToString("0.##");
+        coinDrop.text = $"+{playerStats.CoinMultiplier * 100f:0.#}%";
+        expGain.text = $"+{playerStats.ExpGain * 100f:0.#}%";
     }
 
     private void UpdateLevel(int newLvl)
     {
         level.text = newLvl.ToString();
-    }
-
-    private void UpdateAtkDmg(float amount)
-    {
-        attackDmg.text = amount.ToString();
-    }
-
-    private void UpdateAtkSpeed(float amount)
-    {
-        attackSpeed.text = amount.ToString();
-    }
-
-    private void UpdateMoveSpeed(float amount)
-    {
-        moveSpeed.text = amount.ToString();
-    }
-
-    private void UpdateCoinDrop(float amount)
-    {
-        coinDrop.text = amount.ToString();
-    }
-
-    private void UpdateExp(float amount)
-    {
-        expGain.text = amount.ToString();
     }
 }

@@ -1109,7 +1109,7 @@ MonoBehaviour:
   backBtn: {fileID: 1017326397}
   shopPanel: {fileID: 1093543373}
   shopItemContainer: {fileID: 663839531}
-  shopItemPrefab: {fileID: 8080791731085405843, guid: be9149346eb5fe844b413f52aed895ae, type: 3}
+  shopItemPrefab: {fileID: 7476883747951433144, guid: be9149346eb5fe844b413f52aed895ae, type: 3}
   itemList:
   - {fileID: 11400000, guid: 85c24f0cd69c943439444698a2bcc270, type: 2}
   - {fileID: 11400000, guid: c55b3778b329a5747874218a375089e3, type: 2}
@@ -6665,6 +6665,8 @@ MonoBehaviour:
   scalingInterval: 30
   healthGrowthPerTick: 1.1
   damageGrowthPerTick: 1.08
+  coinGrowthPerTick: 1.1
+  expGrowthPerTick: 1.1
   maxSpawnPositionAttempts: 30
 --- !u!1 &1168697704
 GameObject:
@@ -13236,12 +13238,7 @@ MonoBehaviour:
   backBtn: {fileID: 1867711326}
   talentPanel: {fileID: 1363224173}
   baseCost: 5
-  deltaHealth: 5
-  deltaDamage: 1
-  deltaAtkSpeed: 0.01
-  deltaCoinDrop: 1
-  deltaExpGain: 1
-  deltaMoveSpeed: 10
+  costMultiplier: 1.15
   upgradeHealthBtn: {fileID: 1733913643}
   upgradeDamageBtn: {fileID: 256045529}
   upgradeAtkSpeedBtn: {fileID: 1899272129}
@@ -13908,6 +13905,13 @@ MonoBehaviour:
   baseMoveSpeed: 250
   baseAttackDamage: 1
   baseAttacksPerSecond: 1
+  healthGrowthPerLevel: 0.08
+  damageGrowthPerLevel: 0.1
+  attackSpeedPerLevel: 0.05
+  moveSpeedPerLevel: 0.15
+  coinBonusPerLevel: 0.1
+  expBonusPerLevel: 0.1
+  healOnKillPercent: 0.04
 --- !u!114 &1939373303
 MonoBehaviour:
   m_ObjectHideFlags: 0

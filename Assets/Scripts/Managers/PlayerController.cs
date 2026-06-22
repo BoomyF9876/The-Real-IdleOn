@@ -205,7 +205,8 @@ public class PlayerController : MonoBehaviour
 
             if (currentTarget.IsDead)
             {
-                Stats.GainExperience(currentTarget.Exp);
+                Stats.GainExperience(currentTarget.Exp * (1f + Stats.ExpGain));
+                Stats.ApplyHealOnKill();
                 currentTarget = null;
                 animator.SetBool("isInCombat", false);
                 return;

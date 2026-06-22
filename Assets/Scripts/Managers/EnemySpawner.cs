@@ -35,6 +35,10 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private float healthGrowthPerTick = 1.10f;
     [Tooltip("Damage multiplier applied per scaling tick.")]
     [SerializeField] private float damageGrowthPerTick = 1.08f;
+    [Tooltip("Coin-drop multiplier per tick. MUST scale (>1) or the economy can't fund exponential upgrade costs. 1.10 tracks enemy HP growth.")]
+    [SerializeField] private float coinGrowthPerTick = 1.10f;
+    [Tooltip("Exp-drop multiplier per tick. Keeps leveling progressing as enemies scale. 1.10 tracks enemy HP growth.")]
+    [SerializeField] private float expGrowthPerTick = 1.10f;
 
     [Header("Duplicate Position Avoidance")]
     [Tooltip("Safety cap on retries before giving up and using the last position generated.")]
@@ -149,8 +153,10 @@ public class EnemySpawner : MonoBehaviour
 
         float health = baseEnemyHealth * healthMult;
         float damage = baseEnemyDamage * damageMult;
-        int coins = baseCoinDrop;
-        float exp = baseExp;
+        // Coins and exp scale with tier too, so income/leveling keep pace with rising
+        // enemy power and exponential upgrade costs.
+        int coins = Mathf.Max(1, Mathf.RoundToInt(baseCoinDrop * Mathf.Pow(coinGrowthPerTick, difficultyTier)));
+        float exp = baseExp * Mathf.Pow(expGrowthPerTick, difficultyTier);
 
         enemy.Initialize(health, damage, baseEnemyAttacksPerSecond, coins, exp);
         enemy.OnDied += HandleEnemyDied;
@@ -163,7 +169,8 @@ public class EnemySpawner : MonoBehaviour
         enemy.OnDied -= HandleEnemyDied;
         aliveEnemies.Remove(enemy);
 
-        int awarded = Mathf.Max(1, Mathf.RoundToInt(coinDrop + PlayerController.Instance.Stats.CoinMultiplier));
+        // CoinMultiplier is a fractional bonus (0.30 = +30%), so multiply rather than add.
+        int awarded = Mathf.Max(1, Mathf.RoundToInt(coinDrop * (1f + PlayerController.Instance.Stats.CoinMultiplier)));
         CoinManager.Instance.AddCoins(awarded);
     }
 

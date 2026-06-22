@@ -604,6 +604,7 @@ MonoBehaviour:
   itemName: {fileID: 3825474295694066517}
   itemDescription: {fileID: 2117423111865018697}
   itemCost: {fileID: 1838681054007172621}
+  buyBtn: {fileID: 5052872183372914320}
 --- !u!1 &8540692302368608008
 GameObject:
   m_ObjectHideFlags: 0
