@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   enemyName: Goblin
   enemySprite: {fileID: -1310422354005345963, guid: aca84f69ad7a57c4b8593faf344a20b2, type: 3}
-  baseHealth: 5
+  baseHealth: 3
   baseDamage: 2
   baseAttacksPerSecond: 1
   baseCoinDrop: 1

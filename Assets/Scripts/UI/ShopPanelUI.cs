@@ -47,7 +47,8 @@ public class ShopPanelUI : MonoBehaviour
         int index = 0;
         foreach (var item in itemList)
         {
-            ShopItemUI obj = Instantiate(shopItemPrefab, new Vector3(0, 250 - index * 100, 0), Quaternion.identity, shopItemContainer.transform);
+            ShopItemUI obj = Instantiate(shopItemPrefab, shopItemContainer.transform);
+            obj.gameObject.GetComponent<RectTransform>().anchoredPosition = new Vector3(0, 250 - index * 180, 0);
             obj.Init(item, TryPurchase);
             spawnedItems.Add(obj);
             index++;

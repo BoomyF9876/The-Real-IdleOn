@@ -16,7 +16,6 @@ public class PausePanelUI : MonoBehaviour
     [SerializeField] Button noBtn;
 
     bool isQuitting = false;
-    private GameState previousState;
 
     void Start()
     {
@@ -39,7 +38,6 @@ public class PausePanelUI : MonoBehaviour
             }
             else
             {
-                previousState = GameManager.Instance.GameState;
                 confirmPanel.SetActive(false);
                 pausePanel.SetActive(true);
 
@@ -58,7 +56,11 @@ public class PausePanelUI : MonoBehaviour
     {
         HideAllPanels();
 
-        GameManager.Instance.ChangeState(previousState);
+        // Resuming from pause always returns to active gameplay.
+        // (This previously restored a captured "previousState", but that state was NewGame -
+        // the game never enters the Playing state - so resuming reloaded scene 1 and restarted
+        // the run. Going straight to Playing just restores Time.timeScale to 1.)
+        GameManager.Instance.ChangeState(GameState.Playing);
     }
 
     void Confirm()

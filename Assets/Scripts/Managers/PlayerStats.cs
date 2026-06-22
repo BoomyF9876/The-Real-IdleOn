@@ -55,7 +55,7 @@ public class PlayerStats : MonoBehaviour
 
     [Header("Sustain")]
     [Tooltip("Fraction of MAX health healed on each kill. 0.04 => heal 4% of max HP per kill. Without sustain the player bleeds out; this is the main survivability knob.")]
-    [SerializeField] private float healOnKillPercent = 0.04f;
+    [SerializeField] private float healOnKillPercent = 0.01f;
 
     // ---- Talent levels (single source of truth; TalentPanelUI reads these to price upgrades) ----
     private int healthLevel;
@@ -222,7 +222,7 @@ public class PlayerStats : MonoBehaviour
     public void ApplyHealOnKill()
     {
         if (IsDead) return;
-        //Heal(MaxHealth * healOnKillPercent);
+        Heal(MaxHealth * healOnKillPercent);
     }
 
     public void GainExperience(float amount)
