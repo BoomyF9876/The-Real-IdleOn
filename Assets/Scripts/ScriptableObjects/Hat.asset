@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1a9475a0d95d8e47a0257e3170a73d2, type: 3}
+  m_Name: Hat
+  m_EditorClassIdentifier: Assembly-CSharp::ShopItem
+  itemSprite: {fileID: -3731702043509391428, guid: 65f8dba92e290eb42a821ac8862ece9c, type: 3}
+  itemName: Hat
+  itemCost: 50
+  healthBoost: 50
+  damageBoost: 5
+  atkSpeedBoost: 0
+  moveSpeedBoost: 0
+  coinBoost: 0
+  experienceBoost: 0
