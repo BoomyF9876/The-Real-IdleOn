@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,7 +8,7 @@ public class TalentPanelUI : MonoBehaviour
     [SerializeField] Button backBtn;
     [SerializeField] GameObject talentPanel;
     [SerializeField] int baseCost = 5;
-
+    [SerializeField] float costMultipler = 0f; //Use this and numClicks to determine each upgrade cost
     [SerializeField] int deltaHealth = 5;
     [SerializeField] int deltaDamage = 1;
     [SerializeField] float deltaAtkSpeed = 0.01f;
@@ -34,6 +35,13 @@ public class TalentPanelUI : MonoBehaviour
         HidePanel();
         talentBtn.onClick.AddListener(ShowPanel);
         backBtn.onClick.AddListener(HidePanel);
+
+        upgradeHealthBtn.GetComponentInChildren<TMP_Text>().text = baseCost.ToString();
+        upgradeDamageBtn.GetComponentInChildren<TMP_Text>().text = baseCost.ToString();
+        upgradeAtkSpeedBtn.GetComponentInChildren<TMP_Text>().text = baseCost.ToString();
+        upgradeCoinDropBtn.GetComponentInChildren<TMP_Text>().text = baseCost.ToString();
+        upgradeExpGainBtn.GetComponentInChildren<TMP_Text>().text = baseCost.ToString();
+        upgradeMoveSpeedBtn.GetComponentInChildren<TMP_Text>().text = baseCost.ToString();
     }
 
     void ShowPanel()

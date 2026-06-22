@@ -13242,12 +13242,12 @@ MonoBehaviour:
   deltaCoinDrop: 1
   deltaExpGain: 1
   deltaMoveSpeed: 10
-  upgradeHealthBtn: {fileID: 0}
-  upgradeDamageBtn: {fileID: 0}
-  upgradeAtkSpeedBtn: {fileID: 0}
-  upgradeCoinDropBtn: {fileID: 0}
-  upgradeExpGainBtn: {fileID: 0}
-  upgradeMoveSpeedBtn: {fileID: 0}
+  upgradeHealthBtn: {fileID: 1733913643}
+  upgradeDamageBtn: {fileID: 256045529}
+  upgradeAtkSpeedBtn: {fileID: 1899272129}
+  upgradeCoinDropBtn: {fileID: 1638217294}
+  upgradeExpGainBtn: {fileID: 1717987145}
+  upgradeMoveSpeedBtn: {fileID: 1966417493}
 --- !u!1 &1899272127
 GameObject:
   m_ObjectHideFlags: 0

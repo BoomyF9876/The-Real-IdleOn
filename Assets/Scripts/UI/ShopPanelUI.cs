@@ -8,7 +8,7 @@ public class ShopPanelUI : MonoBehaviour
     [SerializeField] Button backBtn;
     [SerializeField] GameObject shopPanel;
     [SerializeField] GameObject shopItemContainer;
-    [SerializeField] GameObject shopItemPrefab;
+    [SerializeField] ShopItemUI shopItemPrefab;
     [SerializeField] List<ShopItem> itemList;
 
     void Start()
@@ -16,6 +16,8 @@ public class ShopPanelUI : MonoBehaviour
         HidePanel();
         shopBtn.onClick.AddListener(ShowPanel);
         backBtn.onClick.AddListener(HidePanel);
+
+        RenderItems();
     }
 
     void ShowPanel()
@@ -26,5 +28,16 @@ public class ShopPanelUI : MonoBehaviour
     void HidePanel()
     {
         shopPanel.SetActive(false);
+    }
+
+    void RenderItems()
+    {
+        int index = 0;
+        foreach (var item in itemList)
+        {
+            ShopItemUI obj = Instantiate(shopItemPrefab, new Vector3(0, 250 - index * 100, 0), Quaternion.identity, shopItemContainer.transform);
+            obj.Init(item);
+            index++;
+        }
     }
 }
