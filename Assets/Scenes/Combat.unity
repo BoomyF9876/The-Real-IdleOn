@@ -1113,6 +1113,7 @@ MonoBehaviour:
   itemList:
   - {fileID: 11400000, guid: 85c24f0cd69c943439444698a2bcc270, type: 2}
   - {fileID: 11400000, guid: c55b3778b329a5747874218a375089e3, type: 2}
+  availHint: {fileID: 1852589276}
 --- !u!1 &126691379
 GameObject:
   m_ObjectHideFlags: 0
@@ -13316,6 +13317,7 @@ MonoBehaviour:
   talentBtn: {fileID: 1191468493}
   backBtn: {fileID: 1867711326}
   talentPanel: {fileID: 1363224173}
+  availHint: {fileID: 1993863681}
   baseCost: 5
   costMultiplier: 1.15
   upgradeHealthBtn: {fileID: 1733913643}

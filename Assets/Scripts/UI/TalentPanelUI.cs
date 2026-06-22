@@ -17,6 +17,8 @@ public class TalentPanelUI : MonoBehaviour
     [SerializeField] Button talentBtn;
     [SerializeField] Button backBtn;
     [SerializeField] GameObject talentPanel;
+    [Tooltip("Red exclamation badge shown only when at least one talent is affordable.")]
+    [SerializeField] Image availHint;
 
     [Header("Cost Curve")]
     [SerializeField] int baseCost = 5;
@@ -88,6 +90,7 @@ public class TalentPanelUI : MonoBehaviour
     void RefreshAll()
     {
         int coins = CoinManager.Instance != null ? CoinManager.Instance.CurrentCoins : 0;
+        bool anyAffordable = false;
 
         foreach (var pair in buttons)
         {
@@ -97,8 +100,13 @@ public class TalentPanelUI : MonoBehaviour
             var label = btn.GetComponentInChildren<TMP_Text>();
             if (label != null) label.text = cost.ToString();
 
-            btn.interactable = coins >= cost; // grey out when unaffordable
+            bool canAfford = coins >= cost;
+            btn.interactable = canAfford; // grey out when unaffordable
+            if (canAfford) anyAffordable = true;
         }
+
+        // Show the red exclamation badge only when something is buyable.
+        if (availHint != null) availHint.gameObject.SetActive(anyAffordable);
     }
 
     void ShowPanel() => talentPanel.SetActive(true);
