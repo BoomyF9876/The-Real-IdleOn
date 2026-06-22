@@ -1,7 +1,11 @@
-.vsconfig
 .vs/*
-Logs/*
-Temp/*
-Library/*
+.vscode/*
+.vsconfig
 UserSettings/*
+Library/*
+Logs/*
+obj/*
+Temp/*
+*.csproj
 *.sln
+*.slnx

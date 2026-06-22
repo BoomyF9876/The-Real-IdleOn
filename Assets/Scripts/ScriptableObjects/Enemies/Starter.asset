@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd67cff75a330ac42823d873703f74c6, type: 3}
+  m_Name: Starter
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  enemyName: Goblin
+  enemySprite: {fileID: -1310422354005345963, guid: aca84f69ad7a57c4b8593faf344a20b2, type: 3}
+  baseHealth: 3
+  baseDamage: 2
+  baseAttacksPerSecond: 1
+  baseCoinDrop: 1
+  baseExp: 1
+  unlockTimeSeconds: 0
+  baseWeight: 20
+  weightRampPerMinute: 3
+  minWeight: 0

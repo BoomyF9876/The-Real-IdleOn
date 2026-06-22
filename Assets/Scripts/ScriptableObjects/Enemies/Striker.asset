@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd67cff75a330ac42823d873703f74c6, type: 3}
+  m_Name: Striker
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  enemyName: Striker
+  enemySprite: {fileID: -6871692465284548835, guid: 2a860036cba7ee343920fe81089a7238, type: 3}
+  baseHealth: 18
+  baseDamage: 5
+  baseAttacksPerSecond: 1.1
+  baseCoinDrop: 5
+  baseExp: 4
+  unlockTimeSeconds: 480
+  baseWeight: 20
+  weightRampPerMinute: 3.5
+  minWeight: 0
