@@ -16,14 +16,17 @@ public class DeathPanelUI : MonoBehaviour
         restartBtn.onClick.AddListener(Restart);
         mainMenuBtn.onClick.AddListener(MainMenu);
         quitBtn.onClick.AddListener(Quit);
+        PlayerController.Instance.Stats.OnPlayerDied += ShowPanel;
     }
 
-    void Update()
+    void OnDisable()
     {
-        if (GameManager.Instance.GameState == GameState.GameOver)
-        {
-            gameOverPanel.SetActive(true);
-        }
+        PlayerController.Instance.Stats.OnPlayerDied -= ShowPanel;
+    }
+
+    void ShowPanel()
+    {
+        gameOverPanel.SetActive(true);
     }
 
     void Restart()

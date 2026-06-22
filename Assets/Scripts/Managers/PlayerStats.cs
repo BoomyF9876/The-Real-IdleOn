@@ -12,6 +12,7 @@ public class PlayerStats : MonoBehaviour
     [Header("Base Stats (Inspector defaults / starting values)")]
     [SerializeField] private float baseMaxExp = 2f;
     [SerializeField] private float baseAttackRange = 1f;
+    [SerializeField] private float baseLvlUpHealthGain = 5f;
     [SerializeField] private float baseMaxHealth = 50f;
     [SerializeField] private float baseMoveSpeed = 2.5f;
     [SerializeField] private float baseAttackDamage = 5f;
@@ -29,6 +30,7 @@ public class PlayerStats : MonoBehaviour
     public float AttacksPerSecond { get; private set; }
     public float CoinMultiplier { get; private set; }
     public float ExpGain { get; private set; }
+    public float HealthGain { get; private set; }
 
     public bool IsDead => CurrentHealth <= 0f;
 
@@ -63,6 +65,7 @@ public class PlayerStats : MonoBehaviour
         AttackDamage = baseAttackDamage;
         AttackRange = baseAttackRange;
         AttacksPerSecond = baseAttacksPerSecond;
+        HealthGain = baseLvlUpHealthGain;
 
         // If max health increased (e.g. from an upgrade), grant the difference to current health
         // rather than fully healing, so upgrading isn't also a free full heal mid-fight.
@@ -98,11 +101,16 @@ public class PlayerStats : MonoBehaviour
         {
             CurrentExp -= MaxExp;
             MaxExp += Level;
+            MaxHealth += HealthGain;
             Level++;
         }
 
         OnExpChanged?.Invoke(CurrentExp, MaxExp);
-        if (Level > oldLvl) OnLevelChanged?.Invoke(Level);
+        if (Level > oldLvl)
+        {
+            OnHealthChanged?.Invoke(CurrentHealth, MaxHealth);
+            OnLevelChanged?.Invoke(Level);
+        }
     }
 
     public void Heal(float amount)
