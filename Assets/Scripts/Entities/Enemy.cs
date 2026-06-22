@@ -12,6 +12,7 @@ public class Enemy : MonoBehaviour, IDamageable
     [SerializeField] private float hitPushBack = 5f;
     [SerializeField] GameObject coinPrefab;
     [SerializeField] HealthBarUI healthBar;
+    [SerializeField] SpriteRenderer enemySprite;
 
     int baseCoinDrop = 1;
     float baseExp = 1;
@@ -33,13 +34,14 @@ public class Enemy : MonoBehaviour, IDamageable
     /// <summary>
     /// Called by EnemySpawner right after Instantiate to set this enemy's power level.
     /// </summary>
-    public void Initialize(float health, float damage, float atkPerSecond, int coinDrop, float exp)
+    public void Initialize(float health, float damage, float atkPerSecond, int coinDrop, float exp, Sprite sprite)
     {
         maxHealth = health;
         attackDamage = damage;
         attacksPerSecond = atkPerSecond;
         baseCoinDrop = coinDrop;
         baseExp = exp;
+        enemySprite.sprite = sprite;
 
         currentHealth = maxHealth;
         animator = GetComponent<Animator>();

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd67cff75a330ac42823d873703f74c6, type: 3}
+  m_Name: Swift
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  enemyName: Swift
+  enemySprite: {fileID: 6817266107019200404, guid: 4b3e1e65236d1774ea0a0f618e243c0d, type: 3}
+  baseHealth: 8
+  baseDamage: 2.6
+  baseAttacksPerSecond: 1.6
+  baseCoinDrop: 2
+  baseExp: 1.2
+  unlockTimeSeconds: 180
+  baseWeight: 25
+  weightRampPerMinute: 2.5
+  minWeight: 0
